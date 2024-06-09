@@ -29,7 +29,7 @@ class IronCondor:
         self.rr = self.max_profit / min(self.max_loss_p, self.max_loss_c)
 
 def importData(ticker, start_date, end_date):
-    data = yf.download(ticker, start=start_date, end=end_date)
+    data = yf.download(ticker, start=start_date, end=end_date, progress=False)
     return data
 
 # Expected value
@@ -131,106 +131,106 @@ def ironCondorModel(price_paths, interval, ticker):
 
     return IronCondor
 
-def main():
-    INTERVAL = 0.8
-    # ETFs
-    #TICKER = 'SPY' # S&P 500
-    #TICKER = 'QQQ' # Nasdaq
-    #TICKER = 'IWM' # Russell 2000
-    #TICKER = 'TLT' # 20+ Year Treasury Bond
-    TICKER = 'SLV' # Silver
-    #TICKER = 'GDX' # Gold Miners
-    # Stocks
+# def main():
+#     INTERVAL = 0.8
+#     # ETFs
+#     #TICKER = 'SPY' # S&P 500
+#     #TICKER = 'QQQ' # Nasdaq
+#     #TICKER = 'IWM' # Russell 2000
+#     #TICKER = 'TLT' # 20+ Year Treasury Bond
+#     TICKER = 'SLV' # Silver
+#     #TICKER = 'GDX' # Gold Miners
+#     # Stocks
 
-    data = importData(TICKER, '2000-01-01', '2024-06-06')
-    #print(data.head(5))
-    data.iloc[:, 3].plot(figsize=(10,5))
-    #print(data.iloc[:, 3].head(5))
-    mpl.xlabel("Time")
-    mpl.ylabel("Price")
-    mpl.title(TICKER + " Historical Price Data")
-    mpl.show()
+#     data = importData(TICKER, '2000-01-01', '2024-06-06')
+#     #print(data.head(5))
+#     data.iloc[:, 3].plot(figsize=(10,5))
+#     #print(data.iloc[:, 3].head(5))
+#     mpl.xlabel("Time")
+#     mpl.ylabel("Price")
+#     mpl.title(TICKER + " Historical Price Data")
+#     mpl.show()
 
-    log_return = np.log(1 + data.iloc[:, 1].pct_change())
+#     log_return = np.log(1 + data.iloc[:, 1].pct_change())
     
-    sb.displot(log_return.iloc[1:], bins=100, kde=True)
-    mpl.xlabel("Daily Return")
-    mpl.ylabel("Frequency")
-    mpl.title("Distribution of Daily Log Returns for " + TICKER)
-    mpl.show()
+#     sb.displot(log_return.iloc[1:], bins=100, kde=True)
+#     mpl.xlabel("Daily Return")
+#     mpl.ylabel("Frequency")
+#     mpl.title("Distribution of Daily Log Returns for " + TICKER)
+#     mpl.show()
 
-    # Calculate the price paths for the next 14 days
-    price_paths = calculatePricePaths(data, 14, 10000)
+#     # Calculate the price paths for the next 14 days
+#     price_paths = calculatePricePaths(data, 14, 10000)
     
-    # Print current price:
-    current_price = data.iloc[-1, 3]
-    print("Current", TICKER, "price:", current_price)
+#     # Print current price:
+#     current_price = data.iloc[-1, 3]
+#     print("Current", TICKER, "price:", current_price)
 
-    # Calculate the inner interval (dictates the range where the Iron Condor will be profitable)
-    lower_bound = np.percentile(price_paths[-1], (100-INTERVAL*100)/2)
-    upper_bound = np.percentile(price_paths[-1], 100-(100-INTERVAL*100)/2)
-    # Calculate the 95% confidence interval
-    lower_bound_1 = np.percentile(price_paths[-1], 2.5)
-    upper_bound_1 = np.percentile(price_paths[-1], 97.5)
-    # Calculate the 99% confidence interval
-    lower_bound_2 = np.percentile(price_paths[-1], 0.5)
-    upper_bound_2 = np.percentile(price_paths[-1], 99.5)
-    print(str(int(INTERVAL*100)) + "% interval: ", lower_bound, upper_bound)
-    print("95% interval: ", lower_bound_1, upper_bound_1)
-    print("99% interval: ", lower_bound_2, upper_bound_2)
-    print("\n")
+#     # Calculate the inner interval (dictates the range where the Iron Condor will be profitable)
+#     lower_bound = np.percentile(price_paths[-1], (100-INTERVAL*100)/2)
+#     upper_bound = np.percentile(price_paths[-1], 100-(100-INTERVAL*100)/2)
+#     # Calculate the 95% confidence interval
+#     lower_bound_1 = np.percentile(price_paths[-1], 2.5)
+#     upper_bound_1 = np.percentile(price_paths[-1], 97.5)
+#     # Calculate the 99% confidence interval
+#     lower_bound_2 = np.percentile(price_paths[-1], 0.5)
+#     upper_bound_2 = np.percentile(price_paths[-1], 99.5)
+#     print(str(int(INTERVAL*100)) + "% interval: ", lower_bound, upper_bound)
+#     print("95% interval: ", lower_bound_1, upper_bound_1)
+#     print("99% interval: ", lower_bound_2, upper_bound_2)
+#     print("\n")
 
-    # # Plotting the predicted price as a probability distribution
-    # sb.displot(price_paths[-1], bins=50, color='blue', legend=False, kde=True)
-    # mpl.axvline(x=lower_bound, color='g', linestyle='--')  # Add a vertical line at the lower bound
-    # mpl.axvline(x=upper_bound, color='g', linestyle='--')  # Add a vertical line at the upper bound
-    # mpl.axvline(x=lower_bound_1, color='r', linestyle='--')  # Add a vertical line at the lower bound
-    # mpl.axvline(x=upper_bound_1, color='r', linestyle='--')  # Add a vertical line at the upper bound
-    # mpl.xlabel('Price')
-    # mpl.ylabel('Frequency')
-    # mpl.title('Prediction Price Distribution - After 100 Days', pad=0)
-    # mpl.show()
+#     # # Plotting the predicted price as a probability distribution
+#     # sb.displot(price_paths[-1], bins=50, color='blue', legend=False, kde=True)
+#     # mpl.axvline(x=lower_bound, color='g', linestyle='--')  # Add a vertical line at the lower bound
+#     # mpl.axvline(x=upper_bound, color='g', linestyle='--')  # Add a vertical line at the upper bound
+#     # mpl.axvline(x=lower_bound_1, color='r', linestyle='--')  # Add a vertical line at the lower bound
+#     # mpl.axvline(x=upper_bound_1, color='r', linestyle='--')  # Add a vertical line at the upper bound
+#     # mpl.xlabel('Price')
+#     # mpl.ylabel('Frequency')
+#     # mpl.title('Prediction Price Distribution - After 100 Days', pad=0)
+#     # mpl.show()
 
-    # # Download the actual future data
-    # data_future = yf.download(TICKER, '2024-05-10', '2024-05-31')
-    # data_future = data_future.iloc[:, 3]
+#     # # Download the actual future data
+#     # data_future = yf.download(TICKER, '2024-05-10', '2024-05-31')
+#     # data_future = data_future.iloc[:, 3]
 
-    # # Plot the simulated price paths and the actual future prices on the same plot
-    # mpl.figure(figsize=(10,5))
-    # mpl.plot(price_paths)
-    # mpl.plot(data_future.values, 'r', label='Actual', linewidth=4)
-    # mpl.xlabel('Time (Days)')
-    # mpl.ylabel('Price')
-    # mpl.title('Simulated Price Paths')
-    # mpl.legend()
-    # mpl.show()
+#     # # Plot the simulated price paths and the actual future prices on the same plot
+#     # mpl.figure(figsize=(10,5))
+#     # mpl.plot(price_paths)
+#     # mpl.plot(data_future.values, 'r', label='Actual', linewidth=4)
+#     # mpl.xlabel('Time (Days)')
+#     # mpl.ylabel('Price')
+#     # mpl.title('Simulated Price Paths')
+#     # mpl.legend()
+#     # mpl.show()
 
-    #print("Minimum risk-reward ratio: ", calculateMinRR(INTERVAL), "\n")
+#     #print("Minimum risk-reward ratio: ", calculateMinRR(INTERVAL), "\n")
 
-    # Run the Iron Condor model
-    #ironCondorModel(price_paths, INTERVAL, TICKER)
-    # Run the Iron Condor model with a 95% interval
-    #ironCondorModel(price_paths, 0.95, TICKER)
-    # Run the Iron Condor model with a 90% interval
-    ironCondorModel(price_paths, 0.9, TICKER)
-    # Run the Iron Condor model with a 85% interval
-    ironCondorModel(price_paths, 0.85, TICKER)
-    # Run the Iron Condor model with a 80% interval
-    ironCondorModel(price_paths, 0.8, TICKER)
-    # Run the Iron Condor model with a 75% interval
-    ironCondorModel(price_paths, 0.75, TICKER)
-    # Run the Iron Condor model with a 70% interval
-    ironCondorModel(price_paths, 0.7, TICKER)
-    # Run the Iron Condor model with a 65% interval
-    ironCondorModel(price_paths, 0.65, TICKER)
-    # Run the Iron Condor model with a 60% interval
-    ironCondorModel(price_paths, 0.6, TICKER)
+#     # Run the Iron Condor model
+#     #ironCondorModel(price_paths, INTERVAL, TICKER)
+#     # Run the Iron Condor model with a 95% interval
+#     #ironCondorModel(price_paths, 0.95, TICKER)
+#     # Run the Iron Condor model with a 90% interval
+#     ironCondorModel(price_paths, 0.9, TICKER)
+#     # Run the Iron Condor model with a 85% interval
+#     ironCondorModel(price_paths, 0.85, TICKER)
+#     # Run the Iron Condor model with a 80% interval
+#     ironCondorModel(price_paths, 0.8, TICKER)
+#     # Run the Iron Condor model with a 75% interval
+#     ironCondorModel(price_paths, 0.75, TICKER)
+#     # Run the Iron Condor model with a 70% interval
+#     ironCondorModel(price_paths, 0.7, TICKER)
+#     # Run the Iron Condor model with a 65% interval
+#     ironCondorModel(price_paths, 0.65, TICKER)
+#     # Run the Iron Condor model with a 60% interval
+#     ironCondorModel(price_paths, 0.6, TICKER)
 
-    # # parallelize the Iron Condor model
-    # intervals = [INTERVAL, 0.95, 0.9, 0.85, 0.75, 0.7]
-    # with ThreadPoolExecutor() as executor:
-    #     for interval in intervals:
-    #         executor.submit(ironCondorModel, price_paths, interval)
+#     # # parallelize the Iron Condor model
+#     # intervals = [INTERVAL, 0.95, 0.9, 0.85, 0.75, 0.7]
+#     # with ThreadPoolExecutor() as executor:
+#     #     for interval in intervals:
+#     #         executor.submit(ironCondorModel, price_paths, interval)
 
-if __name__ == '__main__':
-    main()
+# if __name__ == '__main__':
+#     main()
